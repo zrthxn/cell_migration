@@ -1,0 +1,4 @@
+bayesflow 
+tidynamics
+numpy
+ipykernel
