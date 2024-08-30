@@ -42,15 +42,29 @@ class LineReader:
     """ Contains a timeseries for each parameter
     """
     
-    def __init__(self, fparams: str | Path, fseries: List[str] | List[Path]) -> None:
+    def __init__(self, fparams: str | Path, fseries: List[str] | List[Path], nlines: int, norm = False) -> None:
         with ExitStack() as stack:
             pr = stack.enter_context(open(fparams, "r"))
             fp = [stack.enter_context(open(f, "r")) for f in fseries]
             
-            while pr.readable():
+            # while pr.readable():
+            for lnum in range(nlines):
+                params_line = pr.readline().strip()
+                series_line = [f.readline().strip() for f in fp]
+                
                 try:
-                    params = np.array(parse_line(pr.readline().strip()))
-                    series = np.array([parse_line(f.readline().strip()) for f in fp])
+                    params = np.array([lnum] + parse_line(params_line))
+                    series = [np.array(parse_line(l)) for l in series_line]
+                    
+                    s_mean = [s.mean() for s in series]
+                    s_std = [s.std() for s in series]
+                    if norm:
+                        series = [ (s - m)/z for s, m, z in zip(series, s_mean, s_std) ]
+                    
+                    slens = list(map(len, series))
+                    pad_to = max(slens)
+                    slice_to = min(slens)
+                    series = [ s[:slice_to] for s in series ]
                     
                     self.params.append(params)
                     self.series.append(series)
@@ -58,15 +72,15 @@ class LineReader:
                     print(Warning("Ingored 1 line"))
         
     def __getitem__(self, index):
-        return self.params[index], self.series[index]
-    
-    def iter(self):
-        ...
+        return self.params[index][1:], self.series[index]
     
     def sample_params(self):
-        IX = randint(0, len(self.params))
-        return self[IX][0], IX
+        IX = randint(0, len(self.params) - 1)
+        return self.params[IX]
+    
+    def simulate_series(self, params: np.ndarray):
+        return self.series[params[0].astype(int)]
     
     def sample(self):
         IX = randint(0, len(self.params))
-        return self[IX], IX
+        return self[IX]
