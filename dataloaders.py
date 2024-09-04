@@ -38,7 +38,7 @@ class LineReader:
     """ Contains parameters
     """
     
-    series: List[DataFrame] = []
+    series: List[List] = []
     """ Contains a timeseries for each parameter
     """
     
