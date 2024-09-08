@@ -42,7 +42,16 @@ class LineReader:
     """ Contains a timeseries for each parameter
     """
     
-    def __init__(self, fparams: str | Path, fseries: List[str] | List[Path], nlines: int, norm = False) -> None:
+    indexable_series: bool
+    """ Tells you whether or not the series are indexable 
+        with the first [0th] parameter
+    """
+    
+    model: callable
+    
+    def __init__(self, fparams: str | Path, fseries: List[str] | List[Path], nlines: int, norm = False, prepend_index = True) -> None:
+        self.indexable_series = prepend_index
+        
         with ExitStack() as stack:
             pr = stack.enter_context(open(fparams, "r"))
             fp = [stack.enter_context(open(f, "r")) for f in fseries]
@@ -53,8 +62,12 @@ class LineReader:
                 series_line = [f.readline().strip() for f in fp]
                 
                 try:
-                    params = np.array([lnum] + parse_line(params_line))
+                    if prepend_index:
+                        params_line = f"{lnum} {params_line}"
+                        
+                    params = np.array(parse_line(params_line))
                     series = [np.array(parse_line(l)) for l in series_line]
+                    
                     
                     s_mean = [s.mean() for s in series]
                     s_std = [s.std() for s in series]
@@ -70,17 +83,28 @@ class LineReader:
                     self.series.append(series)
                 except:
                     print(Warning("Ingored 1 line"))
+                
+                assert len(self.params) == len(self.params)
+                
+    def __len__(self):
+        return len(self.params)
         
     def __getitem__(self, index):
-        return self.params[index][1:], self.series[index]
+        return self.params[index][0 if self.indexable_series else 1:], self.series[index]
     
     def sample_params(self):
         IX = randint(0, len(self.params) - 1)
         return self.params[IX]
     
     def simulate_series(self, params: np.ndarray):
-        return self.series[params[0].astype(int)]
-    
+        if self.indexable_series:
+            return self.series[params[0].astype(int)]
+        
+        if self.model:
+            return self.model(params)
+        
+        raise RuntimeError("Cannot simulate without a model")
+        
     def sample(self):
         IX = randint(0, len(self.params))
         return self[IX]
