@@ -3,7 +3,8 @@ from typing import List
 from pathlib import Path
 from contextlib import ExitStack
 from pandas import DataFrame
-from random import randint
+from random import randint, shuffle
+
 
 def lc_substring(s1: str, s2: str):
     print(s1 == s2)
@@ -85,12 +86,28 @@ class LineReader:
                     print(Warning("Ingored 1 line"))
                 
                 assert len(self.params) == len(self.params)
+        
+        self.params = np.array(self.params)
+        self.series = np.array(self.series)
                 
     def __len__(self):
         return len(self.params)
         
     def __getitem__(self, index):
         return self.params[index][0 if self.indexable_series else 1:], self.series[index]
+    
+    def train_val_split(self, frac: float):
+        SPLIT = int(frac * len(self))
+        ORDER = list(range(len(self)))
+        shuffle(ORDER)
+        
+        train_x = self.params[ORDER][:SPLIT]
+        train_y = self.series[ORDER][:SPLIT]
+        
+        val_x = self.params[ORDER][SPLIT:]
+        val_y = self.series[ORDER][SPLIT:]
+        
+        return (train_x, train_y), (val_x, val_y)
     
     def sample_params(self):
         IX = randint(0, len(self.params) - 1)
