@@ -43,58 +43,20 @@ class LineReader:
     """ Contains a timeseries for each parameter
     """
     
-    indexable_series: bool
-    """ Tells you whether or not the series are indexable 
-        with the first [0th] parameter
-    """
-    
     model: callable
     
-    def __init__(self, fparams: str | Path, fseries: List[str] | List[Path], nlines: int, norm = False, prepend_index = True) -> None:
-        self.indexable_series = prepend_index
-        
-        with ExitStack() as stack:
-            pr = stack.enter_context(open(fparams, "r"))
-            fp = [stack.enter_context(open(f, "r")) for f in fseries]
-            
-            # while pr.readable():
-            for lnum in range(nlines):
-                params_line = pr.readline().strip()
-                series_line = [f.readline().strip() for f in fp]
-                
-                try:
-                    if prepend_index:
-                        params_line = f"{lnum} {params_line}"
-                        
-                    params = np.array(parse_line(params_line))
-                    series = [np.array(parse_line(l)) for l in series_line]
-                    
-                    
-                    s_mean = [s.mean() for s in series]
-                    s_std = [s.std() for s in series]
-                    if norm:
-                        series = [ (s - m)/z for s, m, z in zip(series, s_mean, s_std) ]
-                    
-                    slens = list(map(len, series))
-                    pad_to = max(slens)
-                    slice_to = min(slens)
-                    series = [ s[:slice_to] for s in series ]
-                    
-                    self.params.append(params)
-                    self.series.append(series)
-                except:
-                    print(Warning("Ingored 1 line"))
-                
-                assert len(self.params) == len(self.params)
-        
-        self.params = np.array(self.params)
-        self.series = np.array(self.series)
+    def __init__(self, fparams: str | Path, fseries: List[str] | List[Path], nlines: int, norm = False) -> None:                
+        self.params = np.loadtxt(fparams)
+        self.series = np.array([
+            np.loadtxt(f) for f in fseries
+        ])
+    
                 
     def __len__(self):
         return len(self.params)
         
     def __getitem__(self, index):
-        return self.params[index][0 if self.indexable_series else 1:], self.series[index]
+        return self.params[index], self.series[index]
     
     def train_val_split(self, frac: float):
         SPLIT = int(frac * len(self))
@@ -113,14 +75,14 @@ class LineReader:
         IX = randint(0, len(self.params) - 1)
         return self.params[IX]
     
-    def simulate_series(self, params: np.ndarray):
-        if self.indexable_series:
-            return self.series[params[0].astype(int)]
+    # def simulate_series(self, params: np.ndarray):
+    #     if self.indexable_series:
+    #         return self.series[params[0].astype(int)]
         
-        if self.model:
-            return self.model(params)
+    #     if self.model:
+    #         return self.model(params)
         
-        raise RuntimeError("Cannot simulate without a model")
+    #     raise RuntimeError("Cannot simulate without a model")
         
     def sample(self):
         IX = randint(0, len(self.params))
