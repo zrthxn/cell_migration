@@ -51,7 +51,10 @@ class LineReader:
         series = [ np.loadtxt(f) for f in fseries ]
         SLICETO = min([ s.shape[1] for s in series ])
         series = [ s[:, :SLICETO] for s in series ]
-        self.series = np.array(series)
+        series = np.array(series)
+        
+        ndim, nrow, time = series.shape
+        self.series = series.reshape((nrow, ndim, time))
     
                 
     def __len__(self):
