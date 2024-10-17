@@ -16,8 +16,7 @@ RNG = np.random.default_rng(2023)
 HOME = os.getenv("HOME")
 
 
-args = TrainArguments()
-args.parse_known_args(sys.argv[1:])
+args, _ = TrainArguments().parse_known_args(sys.argv[1:])
 
 params, series = load_dataset(args.parameters, args.series, args.limit_dataset)
 
