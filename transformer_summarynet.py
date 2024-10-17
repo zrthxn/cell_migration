@@ -9,8 +9,8 @@ from bayesflow.amortizers import AmortizedPosterior
 from bayesflow.trainers import Trainer
 from bayesflow.diagnostics import plot_recovery, plot_losses, plot_sbc_ecdf
 
-from ..args import TrainArguments
-from ..dataloaders import load_dataset
+from utils.args import TrainArguments
+from utils.dataloaders import load_dataset
 
 RNG = np.random.default_rng(2023)
 HOME = os.getenv("HOME")
