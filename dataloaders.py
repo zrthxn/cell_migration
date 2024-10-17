@@ -34,7 +34,10 @@ def loadfile(path: str):
 
 
 def load_dataset(f_params: str, f_series: list, limit: int = None):
+    print("Reading parameters from", f_params)
     params = np.loadtxt(f_params)
+    
+    print(f"Reading {len(f_series)} series from\n\t", ", \n\t".join(f_series))
     series = [np.loadtxt(f) for f in f_series]
 
     # Since series can be different length, we slice them to the same length
