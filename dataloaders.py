@@ -33,6 +33,30 @@ def loadfile(path: str):
     return file
 
 
+def load_dataset(f_params: str, f_series: list, limit: int = None):
+    params = np.loadtxt(f_params)
+    series = [np.loadtxt(f) for f in f_series]
+
+    # Since series can be different length, we slice them to the same length
+    SLICETO = min([ s.shape[1] for s in series ])
+    series = [ s[:, :SLICETO] for s in series ]
+    series = np.array(series)
+
+    # Put in to the right shape
+    series = np.swapaxes(series, 0, 1)
+
+    # Apply limits
+    if limit:
+        params = params[:limit]
+        series = series[:limit]
+
+    print("Parameters of Shape", params.shape)
+    print("Series of Shape", series.shape)
+    
+    return params, series
+
+
+
 class LineReader:
     
     params: List = []
@@ -80,14 +104,14 @@ class LineReader:
         IX = randint(0, len(self.params) - 1)
         return self.params[IX]
     
-    # def simulate_series(self, params: np.ndarray):
-    #     if self.indexable_series:
-    #         return self.series[params[0].astype(int)]
+    def simulate_series(self, params: np.ndarray):
+        if self.indexable_series:
+            return self.series[params[0].astype(int)]
         
-    #     if self.model:
-    #         return self.model(params)
+        if self.model:
+            return self.model(params)
         
-    #     raise RuntimeError("Cannot simulate without a model")
+        raise RuntimeError("Cannot simulate without a model")
         
     def sample(self):
         IX = randint(0, len(self.params))

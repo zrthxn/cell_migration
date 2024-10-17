@@ -2,3 +2,5 @@ bayesflow
 tidynamics
 numpy
 ipykernel
+tf_keras
+upycli
