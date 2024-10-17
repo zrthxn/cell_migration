@@ -3,13 +3,14 @@ import sys
 import numpy as np
 from random import randint
 from pathlib import Path
-from args import TrainArguments
-from dataloaders import load_dataset
 from bayesflow.simulation import Prior
 from bayesflow.networks import InvertibleNetwork, TimeSeriesTransformer
 from bayesflow.amortizers import AmortizedPosterior
 from bayesflow.trainers import Trainer
 from bayesflow.diagnostics import plot_recovery, plot_losses, plot_sbc_ecdf
+
+from ..args import TrainArguments
+from ..dataloaders import load_dataset
 
 RNG = np.random.default_rng(2023)
 HOME = os.getenv("HOME")
