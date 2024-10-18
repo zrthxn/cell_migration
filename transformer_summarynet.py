@@ -67,7 +67,7 @@ def configure_input(input_dict):
 
 summary_net = TimeSeriesTransformer(input_dim=series.shape[1]+1)
 inference_net = InvertibleNetwork(num_params=len(prior.param_names), num_coupling_layers=4)
-amortizer = AmortizedPosterior(inference_net, summary_net, name="covid_amortizer")
+amortizer = AmortizedPosterior(inference_net, summary_net, name="transformer_amortizer")
 
 trainer = Trainer(amortizer=amortizer, generative_model=None, configurator=configure_input, memory=True)
 history = trainer.train_offline(offline_data, epochs=100, batch_size=64, early_stopping=True, validation_sims=validation_data)
