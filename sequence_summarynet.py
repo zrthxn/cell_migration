@@ -40,8 +40,8 @@ validation_data = { "prior_draws": val[0], "sim_data": val[1] }
 
 def configure_input(input_dict):
     
-    """Function to configure the simulated quantities (i.e., simulator outputs)
-    into a neural network-friendly (BayesFlow) format.
+    """ Function to configure the simulated quantities (i.e., simulator outputs)
+        into a neural network-friendly (BayesFlow) format.
     """
     
     # Extract prior draws and z-standardize with previously computed means
@@ -63,7 +63,7 @@ def configure_input(input_dict):
 
     return {
         "parameters": params,
-        "summary_conditions": data.astype(np.float32)  # for the sequence network
+        "summary_conditions": data.astype(np.float32)
     }
 
 
