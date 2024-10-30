@@ -86,6 +86,5 @@ post_samples = amortizer.sample(validation_sims, n_samples=100)
 plot_sbc_ecdf(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
     .savefig(Path(args.plot_dir) / "sbc_ecdf.png")
 
-post_samples = amortizer.sample(validation_sims, n_samples=1000)
 plot_recovery(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
     .savefig(Path(args.plot_dir) / "recovery.png")
