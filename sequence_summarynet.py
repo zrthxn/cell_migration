@@ -23,19 +23,18 @@ params, series = load_dataset(args.parameters, args.series, args.limit_dataset)
 prior = Prior(prior_fun=lambda: params[randint(0, len(params) - 1)], param_names=["P1", "P2", "P3"])
 
 prior_mean, prior_std = prior.estimate_means_and_stds()
+prior.plot_prior2d().savefig(Path(args.plot_dir) / "prior.png")
 print(f"Prior(mean={prior_mean}, std={prior_std})")
 
 series_mean = np.mean(series, axis=(0,2))[np.newaxis, :, np.newaxis]
 series_std = np.std(series, axis=(0,2))[np.newaxis, :, np.newaxis]
 print(f"Series(mean={series_mean}, std={series_std})")
 
-prior.plot_prior2d().savefig(Path(args.plot_dir) / "prior.png")
-
 SPLIT = int(args.test_val_split * len(params))
 train = params[:SPLIT], series[:SPLIT]
 val = params[SPLIT:], series[SPLIT:]
 
-offline_data = { "prior_draws": train[0], "sim_data": train[1] }
+training_data = { "prior_draws": train[0], "sim_data": train[1] }
 validation_data = { "prior_draws": val[0], "sim_data": val[1] }
 
 def configure_input(input_dict):
@@ -72,7 +71,7 @@ inference_net = InvertibleNetwork(num_params=len(prior.param_names), num_couplin
 amortizer = AmortizedPosterior(inference_net, summary_net, name="lstm_amortizer")
 
 trainer = Trainer(amortizer=amortizer, generative_model=None, configurator=configure_input, memory=True)
-history = trainer.train_offline(offline_data, epochs=100, batch_size=64, early_stopping=True, validation_sims=validation_data)
+history = trainer.train_offline(training_data, epochs=100, batch_size=64, early_stopping=True, validation_sims=validation_data)
 
 plot_losses(np.log(history["train_losses"]), np.log(history["val_losses"]), moving_average=True)\
     .savefig(Path(args.plot_dir) / "losses.png")
