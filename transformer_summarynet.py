@@ -68,8 +68,13 @@ summary_net = TimeSeriesTransformer(input_dim=series.shape[1]+1)
 inference_net = InvertibleNetwork(num_params=len(prior.param_names), num_coupling_layers=4)
 amortizer = AmortizedPosterior(inference_net, summary_net, name="transformer_amortizer")
 
-trainer = Trainer(amortizer=amortizer, generative_model=None, configurator=configure_input, memory=True)
-history = trainer.train_offline(training_data, epochs=100, batch_size=64, early_stopping=True, validation_sims=validation_data)
+trainer = Trainer(amortizer=amortizer, configurator=configure_input, memory=True, checkpoint_path=args.save_to)
+history = trainer.train_offline(training_data, 
+    epochs=100, 
+    batch_size=64, 
+    early_stopping=True, 
+    validation_sims=validation_data, 
+    save_checkpoint=True)
 
 plot_losses(np.log(history["train_losses"]), np.log(history["val_losses"]), moving_average=True)\
     .savefig(Path(args.plot_dir) / "losses.png")

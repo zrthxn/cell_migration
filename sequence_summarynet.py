@@ -70,14 +70,22 @@ summary_net = SequenceNetwork()
 inference_net = InvertibleNetwork(num_params=len(prior.param_names), num_coupling_layers=4)
 amortizer = AmortizedPosterior(inference_net, summary_net, name="lstm_amortizer")
 
-trainer = Trainer(amortizer=amortizer, generative_model=None, configurator=configure_input, memory=True)
-history = trainer.train_offline(training_data, epochs=100, batch_size=64, early_stopping=True, validation_sims=validation_data)
+trainer = Trainer(amortizer=amortizer, configurator=configure_input, memory=True, checkpoint_path=args.save_to)
+history = trainer.train_offline(training_data, 
+    epochs=100, 
+    batch_size=64, 
+    early_stopping=True, 
+    validation_sims=validation_data, 
+    save_checkpoint=True)
 
 plot_losses(np.log(history["train_losses"]), np.log(history["val_losses"]), moving_average=True)\
     .savefig(Path(args.plot_dir) / "losses.png")
 
 trainer.diagnose_latent2d()\
     .savefig(Path(args.plot_dir) / "diagnose_latent2d.png")
+
+# TODO:TODO: De-normalize validation data using series mean/std and prior mean/std
+# TODO:TODO: Plot both norm and de-norm values
 
 # Generate posterior draws for all simulations
 validation_sims = trainer.configurator(validation_data)
@@ -87,5 +95,10 @@ post_samples = amortizer.sample(validation_sims, n_samples=100)
 plot_sbc_ecdf(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
     .savefig(Path(args.plot_dir) / "sbc_ecdf.png")
 
+# TODO: Stacked and histogram SBC ECDF
+
 plot_recovery(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
     .savefig(Path(args.plot_dir) / "recovery.png")
+    
+# TODO:TODO: density contour plot instead of points
+# TODO: Recovery with cell and fish ids, abuse recovery plot maybe to show uncertainty in each param se
