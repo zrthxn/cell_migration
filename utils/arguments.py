@@ -16,6 +16,6 @@ class ValidationArguments(ArgumentParser):
     def __init__(self) -> None:
         super().__init__()
         self.add_argument("--checkpoint", type=str, required=True)
-        self.add_argument("--series", action="store", nargs="*", required=True)
         self.add_argument("--parameters", type=str, required=True)
+        self.add_argument("--series", action="store", nargs="*", required=True)
         self.add_argument("--plot_dir", type=str, default=".")

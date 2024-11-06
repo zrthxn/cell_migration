@@ -23,7 +23,7 @@ params, series = load_dataset(args.parameters, args.series, args.limit_dataset)
 prior = Prior(prior_fun=lambda: params[randint(0, len(params) - 1)], param_names=["P1", "P2", "P3"])
 
 prior_mean, prior_std = prior.estimate_means_and_stds()
-prior.plot_prior2d().savefig(Path(args.plot_dir) / "prior.png")
+prior.plot_prior2d().savefig(Path(args.plot_dir) / "training_prior.png")
 print(f"Prior(mean={prior_mean}, std={prior_std})")
 
 series_mean = np.mean(series, axis=(0,2))[np.newaxis, :, np.newaxis]
@@ -58,10 +58,10 @@ history = trainer.train_offline(training_data,
     save_checkpoint=True)
 
 plot_losses(np.log(history["train_losses"]), np.log(history["val_losses"]), moving_average=True)\
-    .savefig(Path(args.plot_dir) / "losses.png")
+    .savefig(Path(args.plot_dir) / "training_losses.png")
 
 trainer.diagnose_latent2d()\
-    .savefig(Path(args.plot_dir) / "diagnose_latent2d.png")
+    .savefig(Path(args.plot_dir) / "training_diagnose_latent2d.png")
 
 # Generate posterior draws for all simulations
 validation_sims = trainer.configurator(validation_data)
@@ -69,15 +69,15 @@ post_samples = amortizer.sample(validation_sims, n_samples=100)
 
 # Create ECDF plot
 plot_sbc_ecdf(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
-    .savefig(Path(args.plot_dir) / "sbc_ecdf.png")
+    .savefig(Path(args.plot_dir) / "training_sbc_ecdf.png")
 plot_sbc_ecdf(post_samples, validation_sims["parameters"], param_names=prior.param_names, stacked=True, difference=True)\
-    .savefig(Path(args.plot_dir) / "sbc_ecdf_stacked.png")
+    .savefig(Path(args.plot_dir) / "training_sbc_ecdf_stacked.png")
 plot_sbc_histograms(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
-    .savefig(Path(args.plot_dir) / "sbc_ecdf_stacked.png")
+    .savefig(Path(args.plot_dir) / "training_sbc_ecdf_histogram.png")
 
 # TODO:TODO: De-normalize validation data using series mean/std and prior mean/std
 # TODO:TODO: Plot both norm and de-norm values
 # TODO:TODO: density contour plot instead of points
 # TODO: Recovery with cell and fish ids, abuse recovery plot maybe to show uncertainty in each param se
 plot_recovery(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
-    .savefig(Path(args.plot_dir) / "recovery.png")
+    .savefig(Path(args.plot_dir) / "training_recovery.png")

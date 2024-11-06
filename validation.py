@@ -52,17 +52,17 @@ trainer.load_pretrained_network()
 validation_sims = trainer.configurator(validation_data)
 post_samples = amortizer.sample(validation_sims, n_samples=100)
 
-# Create ECDF plot
-plot_sbc_ecdf(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
-    .savefig(Path(args.plot_dir) / "sbc_ecdf.png")
-plot_sbc_ecdf(post_samples, validation_sims["parameters"], param_names=prior.param_names, stacked=True, difference=True)\
-    .savefig(Path(args.plot_dir) / "sbc_ecdf_stacked.png")
-plot_sbc_histograms(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
-    .savefig(Path(args.plot_dir) / "sbc_ecdf_stacked.png")
+# # Create ECDF plot
+# plot_sbc_ecdf(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
+#     .savefig(Path(args.plot_dir) / "validation_sbc_ecdf.png")
+# plot_sbc_ecdf(post_samples, validation_sims["parameters"], param_names=prior.param_names, stacked=True, difference=True)\
+#     .savefig(Path(args.plot_dir) / "validation_sbc_ecdf_stacked.png")
+# plot_sbc_histograms(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
+#     .savefig(Path(args.plot_dir) / "validation_sbc_ecdf_histogram.png")
 
 # TODO:TODO: De-normalize validation data using series mean/std and prior mean/std
 # TODO:TODO: Plot both norm and de-norm values
 # TODO:TODO: density contour plot instead of points
 # TODO: Recovery with cell and fish ids, abuse recovery plot maybe to show uncertainty in each param se
 plot_recovery(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
-    .savefig(Path(args.plot_dir) / "recovery.png")
+    .savefig(Path(args.plot_dir) / "validation_recovery.png")
