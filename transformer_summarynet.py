@@ -7,9 +7,10 @@ from bayesflow.simulation import Prior
 from bayesflow.networks import InvertibleNetwork, TimeSeriesTransformer
 from bayesflow.amortizers import AmortizedPosterior
 from bayesflow.trainers import Trainer
-from bayesflow.diagnostics import plot_recovery, plot_losses, plot_sbc_ecdf
+from bayesflow.diagnostics import plot_losses, plot_recovery
+from bayesflow.diagnostics import plot_sbc_ecdf, plot_sbc_histograms
 
-from utils.args import TrainArguments
+from utils.arguments import TrainArguments
 from utils.dataloaders import load_dataset
 
 RNG = np.random.default_rng(2023)
@@ -30,7 +31,7 @@ series_mean = np.mean(series, axis=(0,2))[np.newaxis, :, np.newaxis]
 series_std = np.std(series, axis=(0,2))[np.newaxis, :, np.newaxis]
 print(f"Series(mean={series_mean}, std={series_std})")
 
-SPLIT = int(args.test_val_split * len(params))
+SPLIT = int(args.train_val_split * len(params))
 train = params[:SPLIT], series[:SPLIT]
 val = params[SPLIT:], series[SPLIT:]
 
@@ -89,6 +90,10 @@ post_samples = amortizer.sample(validation_sims, n_samples=100)
 # Create ECDF plot
 plot_sbc_ecdf(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
     .savefig(Path(args.plot_dir) / "sbc_ecdf.png")
-
+plot_sbc_ecdf(post_samples, validation_sims["parameters"], param_names=prior.param_names, stacked=True, difference=True)\
+    .savefig(Path(args.plot_dir) / "sbc_ecdf_stacked.png")
+plot_sbc_histograms(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
+    .savefig(Path(args.plot_dir) / "sbc_ecdf_stacked.png")
+    
 plot_recovery(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
     .savefig(Path(args.plot_dir) / "recovery.png")
