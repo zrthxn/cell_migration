@@ -9,16 +9,13 @@ from bayesflow.diagnostics import plot_losses, plot_recovery
 from bayesflow.diagnostics import plot_sbc_ecdf, plot_sbc_histograms
 
 from models import SequenceNetworkAmortizer, TimeseriesTransformerAmortizer
-from utils.arguments import TrainArguments
+from arguments import TrainArguments
 from utils.dataloaders import load_dataset
-
-RNG = np.random.default_rng(2023)
-HOME = os.getenv("HOME")
 
 
 args, _ = TrainArguments().parse_known_args(sys.argv[1:])
 
-params, series = load_dataset(args.parameters, args.series, args.limit_dataset)
+params, series = load_dataset(args.parameters, args.series, args.limit)
 
 prior = Prior(prior_fun=lambda: params[randint(0, len(params) - 1)], param_names=["P1", "P2", "P3"])
 
@@ -26,8 +23,8 @@ prior_mean, prior_std = prior.estimate_means_and_stds()
 prior.plot_prior2d().savefig(Path(args.plot_dir) / "training_prior.png")
 print(f"Prior(mean={prior_mean}, std={prior_std})")
 
-series_mean = np.mean(series, axis=(0,2))[np.newaxis, :, np.newaxis]
-series_std = np.std(series, axis=(0,2))[np.newaxis, :, np.newaxis]
+series_mean = np.mean(series, axis=2)[:, :, np.newaxis]
+series_std = np.std(series, axis=2)[:, :, np.newaxis]
 print(f"Series(mean={series_mean}, std={series_std})")
 
 # Normalize Parameters and series

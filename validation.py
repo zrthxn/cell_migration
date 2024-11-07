@@ -9,11 +9,8 @@ from bayesflow.diagnostics import plot_recovery
 from bayesflow.diagnostics import plot_sbc_ecdf, plot_sbc_histograms
 
 from models import SequenceNetworkAmortizer, TimeseriesTransformerAmortizer
-from utils.arguments import ValidationArguments
+from arguments import ValidationArguments
 from utils.dataloaders import load_dataset
-
-RNG = np.random.default_rng(2023)
-HOME = os.getenv("HOME")
 
 
 args, _ = ValidationArguments().parse_known_args(sys.argv[1:])
@@ -23,19 +20,16 @@ params, series = load_dataset(args.parameters, args.series)
 prior = Prior(prior_fun=lambda: params[randint(0, len(params) - 1)], param_names=["P1", "P2", "P3"])
 prior_mean, prior_std = prior.estimate_means_and_stds()
 
-series_mean = np.mean(series, axis=(0,2))[np.newaxis, :, np.newaxis]
-series_std = np.std(series, axis=(0,2))[np.newaxis, :, np.newaxis]
+series_mean = np.mean(series, axis=2)[:, :, np.newaxis]
+series_std = np.std(series, axis=2)[:, :, np.newaxis]
 
 # Normalize Parameters and series
 params = (params - prior_mean)  / prior_std
 series = (series - series_mean) / series_std
 
-SPLIT = int(args.train_val_split * len(params))
-train = params[:SPLIT], series[:SPLIT]
-val = params[SPLIT:], series[SPLIT:]
-
-training_data = { "prior_draws": train[0], "sim_data": train[1] }
-validation_data = { "prior_draws": val[0], "sim_data": val[1] }
+if args.limit:
+    params = params[:args.limit]
+    series = series[:args.limit]
 
 # Choose network type
 if args.network == "sequencenet":
@@ -49,7 +43,7 @@ trainer = Trainer(amortizer=amortizer, configurator=amortizer.configurator, memo
 trainer.load_pretrained_network()
 
 # Generate posterior draws for all simulations
-validation_sims = trainer.configurator(validation_data)
+validation_sims = trainer.configurator({ "prior_draws": params, "sim_data": series })
 post_samples = amortizer.sample(validation_sims, n_samples=100)
 
 # # Create ECDF plot

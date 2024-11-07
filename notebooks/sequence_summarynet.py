@@ -10,7 +10,7 @@ from bayesflow.trainers import Trainer
 from bayesflow.diagnostics import plot_losses, plot_recovery
 from bayesflow.diagnostics import plot_sbc_ecdf, plot_sbc_histograms
 
-from utils.arguments import TrainArguments
+from arguments import TrainArguments
 from utils.dataloaders import load_dataset
 
 RNG = np.random.default_rng(2023)
