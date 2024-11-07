@@ -51,20 +51,20 @@ plot_losses(np.log(history["train_losses"]), np.log(history["val_losses"]), movi
     .savefig(args.plot_dir / "training_losses.png")
 
 # Generate posterior draws for all simulations
-parameters = amortizer.configurator(validation_data)["parameters"]
-posterior = amortizer.sample(parameters, n_samples=100)
+simulations = amortizer.configurator(validation_data)["parameters"]
+posterior = amortizer.sample(simulations, n_samples=100)
 
 # Create ECDF plot
-plot_sbc_ecdf(posterior, parameters)\
+plot_sbc_ecdf(posterior, simulations)\
     .savefig(args.plot_dir / "training_sbc_ecdf.png")
-plot_sbc_ecdf(posterior, parameters, stacked=True, difference=True)\
+plot_sbc_ecdf(posterior, simulations, stacked=True, difference=True)\
     .savefig(args.plot_dir / "training_sbc_ecdf_stacked.png")
-plot_sbc_histograms(posterior, parameters)\
+plot_sbc_histograms(posterior, simulations)\
     .savefig(args.plot_dir / "training_sbc_ecdf_histogram.png")
 
 # TODO:TODO: De-normalize validation data using series mean/std and prior mean/std
 # TODO:TODO: Plot both norm and de-norm values
 # TODO:TODO: density contour plot instead of points
 # TODO: Recovery with cell and fish ids, abuse recovery plot maybe to show uncertainty in each param se
-plot_recovery(posterior, parameters)\
+plot_recovery(posterior, simulations)\
     .savefig(args.plot_dir / "training_recovery.png")
