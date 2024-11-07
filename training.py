@@ -1,9 +1,5 @@
-import os
 import sys
 import numpy as np
-from random import randint
-from pathlib import Path
-from bayesflow.simulation import Prior
 from bayesflow.trainers import Trainer
 from bayesflow.diagnostics import plot_losses, plot_recovery
 from bayesflow.diagnostics import plot_sbc_ecdf, plot_sbc_histograms
@@ -17,10 +13,9 @@ args, _ = TrainArguments().parse_known_args(sys.argv[1:])
 
 params, series = load_dataset(args.parameters, args.series, args.limit)
 
-prior = Prior(prior_fun=lambda: params[randint(0, len(params) - 1)], param_names=["P1", "P2", "P3"])
-
-prior_mean, prior_std = prior.estimate_means_and_stds()
-prior.plot_prior2d().savefig(args.plot_dir / "training_prior.png")
+_, num_params = params.shape
+prior_mean = np.mean(params, axis=(0,1))
+prior_std = np.std(params, axis=(0,1))
 
 series_mean = np.mean(series, axis=2)[:, :, np.newaxis]
 series_std = np.std(series, axis=2)[:, :, np.newaxis]
@@ -38,13 +33,13 @@ validation_data = { "prior_draws": val[0], "sim_data": val[1] }
 
 # Choose network type
 if args.network == "sequencenet":
-    amortizer = SequenceNetworkAmortizer(num_params=len(prior.param_names))
+    amortizer = SequenceNetworkAmortizer(num_params)
 elif args.network == "transformer":
-    amortizer = TimeseriesTransformerAmortizer(input_dim=series.shape[1]+1, num_params=len(prior.param_names))
+    amortizer = TimeseriesTransformerAmortizer(series.size(1) + 1, num_params)
 else:
     raise ValueError("Unknown network type!")
 
-trainer = Trainer(amortizer=amortizer, configurator=amortizer.configurator, memory=True, checkpoint_path=args.save_to)
+trainer = Trainer(amortizer, configurator=amortizer.configurator, memory=True, checkpoint_path=args.save_to)
 history = trainer.train_offline(training_data, 
     epochs=args.epochs, 
     batch_size=64, 
@@ -56,20 +51,20 @@ plot_losses(np.log(history["train_losses"]), np.log(history["val_losses"]), movi
     .savefig(args.plot_dir / "training_losses.png")
 
 # Generate posterior draws for all simulations
-validation_sims = trainer.configurator(validation_data)
-post_samples = amortizer.sample(validation_sims, n_samples=100)
+parameters = amortizer.configurator(validation_data)["parameters"]
+posterior = amortizer.sample(parameters, n_samples=100)
 
 # Create ECDF plot
-plot_sbc_ecdf(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
+plot_sbc_ecdf(posterior, parameters)\
     .savefig(args.plot_dir / "training_sbc_ecdf.png")
-plot_sbc_ecdf(post_samples, validation_sims["parameters"], param_names=prior.param_names, stacked=True, difference=True)\
+plot_sbc_ecdf(posterior, parameters, stacked=True, difference=True)\
     .savefig(args.plot_dir / "training_sbc_ecdf_stacked.png")
-plot_sbc_histograms(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
+plot_sbc_histograms(posterior, parameters)\
     .savefig(args.plot_dir / "training_sbc_ecdf_histogram.png")
 
 # TODO:TODO: De-normalize validation data using series mean/std and prior mean/std
 # TODO:TODO: Plot both norm and de-norm values
 # TODO:TODO: density contour plot instead of points
 # TODO: Recovery with cell and fish ids, abuse recovery plot maybe to show uncertainty in each param se
-plot_recovery(post_samples, validation_sims["parameters"], param_names=prior.param_names)\
+plot_recovery(posterior, parameters)\
     .savefig(args.plot_dir / "training_recovery.png")
