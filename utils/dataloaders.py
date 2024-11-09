@@ -41,8 +41,10 @@ def load_dataset(f_params: str, f_series: list, limit: int = None):
     series = [np.loadtxt(f) for f in f_series]
 
     # Since series can be different length, we slice them to the same length
-    SLICETO = min([ s.shape[1] for s in series ])
-    series = [ s[:, :SLICETO] for s in series ]
+    SIZE = min([ s.shape[0] for s in series ])
+    TIME = min([ s.shape[1] for s in series ])
+    
+    series = [ s[:SIZE, :TIME] for s in series ]
     series = np.array(series)
 
     # Put in to the right shape

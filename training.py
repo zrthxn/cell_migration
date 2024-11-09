@@ -17,8 +17,8 @@ _, num_params = params.shape
 prior_mean = np.mean(params, axis=(0,1))
 prior_std = np.std(params, axis=(0,1))
 
-series_mean = np.mean(series, axis=2)[:, :, np.newaxis]
-series_std = np.std(series, axis=2)[:, :, np.newaxis]
+series_mean = np.mean(series, axis=(0,2))[np.newaxis, :, np.newaxis]
+series_std = np.std(series, axis=(0,2))[np.newaxis, :, np.newaxis]
 
 # Normalize Parameters and series
 params = (params - prior_mean)  / prior_std
@@ -35,7 +35,7 @@ validation_data = { "prior_draws": val[0], "sim_data": val[1] }
 if args.network == "sequencenet":
     amortizer = SequenceNetworkAmortizer(num_params)
 elif args.network == "transformer":
-    amortizer = TimeseriesTransformerAmortizer(series.size(1) + 1, num_params)
+    amortizer = TimeseriesTransformerAmortizer(series.shape[1] + 1, num_params)
 else:
     raise ValueError("Unknown network type!")
 
@@ -51,20 +51,20 @@ plot_losses(np.log(history["train_losses"]), np.log(history["val_losses"]), movi
     .savefig(args.plot_dir / "training_losses.png")
 
 # Generate posterior draws for all simulations
-simulations = amortizer.configurator(validation_data)["parameters"]
-posterior = amortizer.sample(simulations, n_samples=100)
+prior = amortizer.configurator(validation_data)
+posterior = amortizer.sample(prior, n_samples=100)
 
 # Create ECDF plot
-plot_sbc_ecdf(posterior, simulations)\
+plot_sbc_ecdf(posterior, prior["parameters"])\
     .savefig(args.plot_dir / "training_sbc_ecdf.png")
-plot_sbc_ecdf(posterior, simulations, stacked=True, difference=True)\
+plot_sbc_ecdf(posterior, prior["parameters"], stacked=True, difference=True)\
     .savefig(args.plot_dir / "training_sbc_ecdf_stacked.png")
-plot_sbc_histograms(posterior, simulations)\
+plot_sbc_histograms(posterior, prior["parameters"])\
     .savefig(args.plot_dir / "training_sbc_ecdf_histogram.png")
 
 # TODO:TODO: De-normalize validation data using series mean/std and prior mean/std
 # TODO:TODO: Plot both norm and de-norm values
 # TODO:TODO: density contour plot instead of points
 # TODO: Recovery with cell and fish ids, abuse recovery plot maybe to show uncertainty in each param se
-plot_recovery(posterior, simulations)\
+plot_recovery(posterior, prior["parameters"])\
     .savefig(args.plot_dir / "training_recovery.png")
