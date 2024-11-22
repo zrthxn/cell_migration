@@ -1,9 +1,9 @@
 import numpy as np
 from typing import List
 from pathlib import Path
-from contextlib import ExitStack
-from pandas import DataFrame
 from random import randint, shuffle
+
+from .arrays import loosestack
 
 
 def lc_substring(s1: str, s2: str):
@@ -41,11 +41,7 @@ def load_dataset(f_params: str, f_series: list, limit: int = None):
     series = [np.loadtxt(f) for f in f_series]
 
     # Since series can be different length, we slice them to the same length
-    SIZE = min([ s.shape[0] for s in series ])
-    TIME = min([ s.shape[1] for s in series ])
-    
-    series = [ s[:SIZE, :TIME] for s in series ]
-    series = np.array(series)
+    series = loosestack(series)
 
     # Put in to the right shape
     series = np.swapaxes(series, 0, 1)

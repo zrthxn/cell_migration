@@ -5,7 +5,7 @@ from pathlib import Path
 class TrainArguments(ArgumentParser):
     def __init__(self) -> None:
         super().__init__()
-        self.add_argument("--network", choices=["sequencenet", "transformer"], required=True)
+        self.add_argument("--network", choices=["sequencenet", "tstransformer"], required=True)
         self.add_argument("--parameters", type=str, required=True)
         self.add_argument("--series", action="store", nargs="*", required=True)
         self.add_argument("--limit", type=int, default=None)
@@ -18,7 +18,7 @@ class TrainArguments(ArgumentParser):
 class ValidationArguments(ArgumentParser):
     def __init__(self) -> None:
         super().__init__()
-        self.add_argument("--network", choices=["sequencenet", "transformer"], required=True)
+        self.add_argument("--network", choices=["sequencenet", "tstransformer"], required=True)
         self.add_argument("--checkpoint", type=Path, required=True)
         self.add_argument("--parameters", type=str, required=True)
         self.add_argument("--series", action="store", nargs="*", required=True)
