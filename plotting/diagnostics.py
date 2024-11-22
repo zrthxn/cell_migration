@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from typing import Literal
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.lines import Line2D
 from scipy.stats import binom, median_abs_deviation
@@ -20,6 +21,8 @@ def plot_recovery(
     prior_samples,
     point_agg=np.median,
     uncertainty_agg=median_abs_deviation,
+    plot_type: Literal["scatter", "errorbar", "kde"]="errorbar",
+    ranges: list=None,
     param_names=None,
     fig_size=None,
     label_fontsize=16,
@@ -104,6 +107,10 @@ def plot_recovery(
     # Sanity check
     check_posterior_prior_shapes(post_samples, prior_samples)
 
+    # Set plot type if uncertainty_agg is None
+    if uncertainty_agg is None:
+        plot_type = "scatter"
+        
     # Compute point estimates and uncertainties
     est = point_agg(post_samples, axis=1)
     if uncertainty_agg is not None:
@@ -135,28 +142,34 @@ def plot_recovery(
     else:
         axarr_it = axarr
 
+    assert len(axarr_it) == len(ranges), "Ranges should be of the same length as number of parameters"
+    
     for i, ax in enumerate(axarr_it):
         if i >= n_params:
             break
 
         # Add scatter and error bars
-        if uncertainty_agg is not None:
-            _ = ax.errorbar(prior_samples[:, i], -1*est[:, i], yerr=u[:, i], fmt="o", alpha=0.5, color=color, **kwargs)
+        if plot_type == "errorbar":
+            _ = ax.errorbar(prior_samples[:, i], est[:, i], yerr=u[:, i], fmt="o", alpha=0.25, color=color, **kwargs)
+        elif plot_type == "kde":
+            _ = sns.kdeplot(x=prior_samples[:, i], y=est[:, i], cmap="Blues", fill=True, ax=ax, **kwargs)
+        elif plot_type == "scatter":
+            _ = ax.scatter(prior_samples[:, i], est[:, i], alpha=0.25, color=color, **kwargs)
         else:
-            _ = ax.scatter(prior_samples[:, i], -1*est[:, i], alpha=0.5, color=color, **kwargs)
+            raise NotImplementedError
 
         # Make plots quadratic to avoid visual illusions
-        lower = min(prior_samples[:, i].min(), est[:, i].min())
-        upper = max(prior_samples[:, i].max(), est[:, i].max())
+        lower = min(prior_samples[:, i].min(), est[:, i].min()) if not ranges else ranges[i][0]
+        upper = max(prior_samples[:, i].max(), est[:, i].max()) if not ranges else ranges[i][1]
         eps = (upper - lower) * 0.1
-        # ax.set_xlim([lower - eps, upper + eps])
-        # ax.set_ylim([lower - eps, upper + eps])
+        ax.set_xlim([lower - eps, upper + eps])
+        ax.set_ylim([lower - eps, upper + eps])
         ax.plot(
             [ax.get_xlim()[0], ax.get_xlim()[1]],
             [ax.get_ylim()[0], ax.get_ylim()[1]],
             color="black",
-            alpha=0.9,
-            linestyle="dashed",
+            alpha=0.5,
+            linestyle="dotted",
         )
 
         # Add optional metrics and title
@@ -187,8 +200,6 @@ def plot_recovery(
         # Prettify
         sns.despine(ax=ax)
         ax.grid(alpha=0.5)
-        ax.set_yscale('log')
-        ax.set_xscale('log')
         ax.tick_params(axis="both", which="major", labelsize=tick_fontsize)
         ax.tick_params(axis="both", which="minor", labelsize=tick_fontsize)
 

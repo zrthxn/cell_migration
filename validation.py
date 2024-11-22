@@ -1,13 +1,11 @@
 import sys
 import numpy as np
 from bayesflow.trainers import Trainer
-from matplotlib import pyplot as plt
 
 from arguments import ValidationArguments
 from utils.dataloaders import load_dataset
 from models import SequenceNetworkAmortizer, TimeseriesTransformerAmortizer
 from plotting import plot_recovery
-
 
 args, _ = ValidationArguments().parse_known_args(sys.argv[1:])
 
@@ -44,5 +42,5 @@ prior["parameters"] = prior["parameters"] * prior_std + prior_mean
 
 # TODO:TODO: Plot both norm and de-norm values
 # TODO:TODO: density contour plot instead of points
-plot_recovery(posterior, prior["parameters"])\
+plot_recovery(posterior, prior["parameters"], plot_type="kde", ranges=[[0, 1.5], [0, 6], [0, 15]])\
     .savefig(args.plot_dir / "validation_recovery.png")
