@@ -7,7 +7,7 @@ class SequenceNetworkAmortizer(AmortizedPosterior):
     
     name = "lstm_amortizer"
     
-    def __init__(self, num_params):
+    def __init__(self, num_params: int):
         summary_net = SequenceNetwork()
         inference_net = InvertibleNetwork(num_params, num_coupling_layers=4)
         super().__init__(inference_net, summary_net, name=self.name)

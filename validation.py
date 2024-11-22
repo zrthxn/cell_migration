@@ -1,12 +1,12 @@
 import sys
 import numpy as np
 from bayesflow.trainers import Trainer
-from bayesflow.diagnostics import plot_recovery
 from matplotlib import pyplot as plt
 
-from models import SequenceNetworkAmortizer, TimeseriesTransformerAmortizer
 from arguments import ValidationArguments
 from utils.dataloaders import load_dataset
+from models import SequenceNetworkAmortizer, TimeseriesTransformerAmortizer
+from plotting import plot_recovery
 
 
 args, _ = ValidationArguments().parse_known_args(sys.argv[1:])
@@ -27,7 +27,7 @@ series = (series - series_mean) / series_std
 # Choose network type
 if args.network == "sequencenet":
     amortizer = SequenceNetworkAmortizer(num_params)
-elif args.network == "transformer":
+elif args.network == "tstransformer":
     amortizer = TimeseriesTransformerAmortizer(series.shape[1] + 1, num_params)
 else:
     raise ValueError("Unknown network type!")
@@ -39,7 +39,6 @@ trainer.load_pretrained_network()
 prior = amortizer.configurator({ "prior_draws": params, "sim_data": series })
 posterior = amortizer.sample(prior, n_samples=100)
 
-# TODO:TODO: De-normalize validation data using series mean/std and prior mean/std
 posterior = posterior * prior_std + prior_mean
 prior["parameters"] = prior["parameters"] * prior_std + prior_mean
 
@@ -47,9 +46,3 @@ prior["parameters"] = prior["parameters"] * prior_std + prior_mean
 # TODO:TODO: density contour plot instead of points
 plot_recovery(posterior, prior["parameters"])\
     .savefig(args.plot_dir / "validation_recovery.png")
-
-# TODO: Recovery with cell and fish ids, abuse recovery plot maybe to show uncertainty in each param
-
-f = plt.figure()
-plt.boxplot(posterior.mean(axis=1))
-f.savefig(args.plot_dir / "validation_uncertainty.png")

@@ -7,7 +7,7 @@ class TimeseriesTransformerAmortizer(AmortizedPosterior):
     
     name = "transformer_amortizer"
     
-    def __init__(self, input_dim, num_params):
+    def __init__(self, input_dim: int, num_params: int):
         summary_net = TimeSeriesTransformer(input_dim)
         inference_net = InvertibleNetwork(num_params, num_coupling_layers=4)
         super().__init__(inference_net, summary_net, name=self.name)
