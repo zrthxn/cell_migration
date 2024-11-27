@@ -34,7 +34,7 @@ validation_data = { "prior_draws": val[0], "sim_data": val[1] }
 # Choose network type
 if args.network == "sequencenet":
     amortizer = SequenceNetworkAmortizer(num_params)
-elif args.network == "transformer":
+elif args.network == "tstransformer":
     amortizer = TimeseriesTransformerAmortizer(series.shape[1] + 1, num_params)
 else:
     raise ValueError("Unknown network type!")
