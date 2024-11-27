@@ -1,3 +1,4 @@
+import os
 import sys
 import numpy as np
 from bayesflow.trainers import Trainer
@@ -10,6 +11,11 @@ from utils.dataloaders import load_dataset
 
 
 args, _ = TrainArguments().parse_known_args(sys.argv[1:])
+
+if not os.path.exists(args.plot_dir):
+    os.makedirs(args.plot_dir)
+if not os.path.exists(args.save_to):
+    os.makedirs(args.save_to)
 
 params, series = load_dataset(args.parameters, args.series, args.limit)
 

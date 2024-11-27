@@ -9,6 +9,11 @@ from plotting import plot_recovery
 
 args, _ = ValidationArguments().parse_known_args(sys.argv[1:])
 
+if not os.path.exists(args.plot_dir):
+    os.makedirs(args.plot_dir)
+if not os.path.exists(args.save_to):
+    os.makedirs(args.save_to)
+
 params, series = load_dataset(args.parameters, args.series, args.limit)
 
 _, num_params = params.shape
