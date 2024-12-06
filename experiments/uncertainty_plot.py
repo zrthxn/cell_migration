@@ -12,9 +12,10 @@ from utils.arrays import loosestack
 #%%
 class args:
     network = "tstransformer"
-    checkpoint = f".checkpoints/{network}"
+    checkpoint = f".checkpoints/tstransformer-maxi"
+    parameters = "/Users/alisamar/Datasets/cell_migration/maxi/parameters.txt"
     
-    parameters = "/Users/alisamar/Datasets/cell_migration/params3/parameters.txt"
+    # Experimental dataset
     series = [
         "/Users/alisamar/Datasets/cell_migration/experimental/msd.txt",
         "/Users/alisamar/Datasets/cell_migration/experimental/dac.txt"]
@@ -100,6 +101,6 @@ for param_post, pname, pix in zip(posterior.swapaxes(0,2), param_names, list(ran
         axs[pix][0].set_ylabel(pname)
 
 f.tight_layout()
-f.savefig(f".checkpoints/uncertainty_{args.network}.png")
+f.savefig(f"{args.checkpoint}/uncertainty.png")
 
 # %%

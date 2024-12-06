@@ -149,12 +149,13 @@ def plot_recovery(
             break
 
         # Add scatter and error bars
+        alpha = max(0.1, 1/len(prior_samples))
         if plot_type == "errorbar":
-            _ = ax.errorbar(prior_samples[:, i], est[:, i], yerr=u[:, i], fmt="o", alpha=0.25, color=color, **kwargs)
+            _ = ax.errorbar(prior_samples[:, i], est[:, i], yerr=u[:, i], fmt="o", alpha=alpha, color=color, **kwargs)
         elif plot_type == "kde":
             _ = sns.kdeplot(x=prior_samples[:, i], y=est[:, i], cmap="Blues", fill=True, ax=ax, **kwargs)
         elif plot_type == "scatter":
-            _ = ax.scatter(prior_samples[:, i], est[:, i], alpha=0.25, color=color, **kwargs)
+            _ = ax.scatter(prior_samples[:, i], est[:, i], marker=".", alpha=alpha, color=color, **kwargs)
         else:
             raise NotImplementedError
 

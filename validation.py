@@ -1,3 +1,4 @@
+import os
 import sys
 import numpy as np
 from bayesflow.trainers import Trainer
@@ -11,8 +12,6 @@ args, _ = ValidationArguments().parse_known_args(sys.argv[1:])
 
 if not os.path.exists(args.plot_dir):
     os.makedirs(args.plot_dir)
-if not os.path.exists(args.save_to):
-    os.makedirs(args.save_to)
 
 params, series = load_dataset(args.parameters, args.series, args.limit)
 
@@ -46,6 +45,5 @@ posterior = posterior * prior_std + prior_mean
 prior["parameters"] = prior["parameters"] * prior_std + prior_mean
 
 # TODO:TODO: Plot both norm and de-norm values
-# TODO:TODO: density contour plot instead of points
 plot_recovery(posterior, prior["parameters"], plot_type="kde", ranges=[[0, 1.5], [0, 6], [0, 15]])\
     .savefig(args.plot_dir / "validation_recovery.png")
