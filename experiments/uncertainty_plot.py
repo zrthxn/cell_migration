@@ -74,7 +74,7 @@ prior["parameters"] = prior["parameters"] * prior_std + prior_mean
 # Uncertainty Plot
 param_names = [ f"P{i+1}" for i in range(num_params) ]
 # Make date+embryo id unique
-date_emb_ids = cell_ids[:, 0]*100 + cell_ids[:, 1]
+date_emb_ids = cell_ids[:, 0]*1000 + cell_ids[:, 1]
 unique_ids, counts = np.unique(date_emb_ids, return_counts=True)
 
 f, axs = plt.subplots(ncols=len(unique_ids), nrows=num_params, figsize=(40, 15), width_ratios=counts / num_samples)
@@ -84,16 +84,17 @@ for param_post, pname, pix in zip(posterior.swapaxes(0,2), param_names, list(ran
     lower, upper = postrange.min(), postrange.max()
     for eix, embryoid in enumerate(unique_ids):
 
-        labels = cell_ids[(cell_ids[:,0]*100 + cell_ids[:,1]) == embryoid][:, 2]
+        labels = cell_ids[(cell_ids[:,0]*1000 + cell_ids[:,1]) == embryoid][:, 2]
         
         axs[pix][eix].boxplot(
             param_post[:, date_emb_ids == embryoid],
             tick_labels=list(labels))
 
-        date = gdata[gdata.datenum == embryoid//100]["#date"].unique()[0]
-        axs[pix][eix].text(1, upper*0.95, f"Date [{embryoid//100}] {date}", horizontalalignment="left")
-        axs[pix][eix].text(1, upper*0.9, f"Embyro {embryoid%100}", horizontalalignment="left")
+        date = gdata[gdata.datenum == embryoid//1000]["#date"].unique()[0]
+        axs[pix][eix].text(1, upper*0.95, f"[Date {embryoid//1000} - {date}]", horizontalalignment="left")
+        axs[pix][eix].text(1, upper*0.9, f"Embyro {embryoid%1000}", horizontalalignment="left")
         axs[pix][eix].set_ylim(lower, upper)
+        # axs[pix][eix].grid()
                 
         if eix != 0:
             axs[pix][eix].set_yticks([])
