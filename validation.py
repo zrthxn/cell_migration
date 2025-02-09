@@ -13,8 +13,10 @@ args, _ = ValidationArguments().parse_known_args(sys.argv[1:])
 if not os.path.exists(args.plot_dir):
     os.makedirs(args.plot_dir)
 
-params, series = load_dataset(args.parameters, args.series, args.limit)
-
+series, params = load_dataset(args.series, args.parameters, limit=args.limit)
+print("Series of Shape", series.shape)
+print("Parameters of Shape", params.shape)
+    
 _, num_params = params.shape
 prior_mean = np.mean(params, axis=(0,1))
 prior_std = np.std(params, axis=(0,1))

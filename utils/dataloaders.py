@@ -3,59 +3,75 @@ from typing import List
 from pathlib import Path
 from random import randint, shuffle
 
-from .arrays import loosestack
+from .arrays import loosestack, loadfile
 
 
-def lc_substring(s1: str, s2: str):
-    print(s1 == s2)
-    print(s1)
-    matches = ""
-    for a, b in zip(s1, s2):
-        matches += "*" if a == b else " "
-    print(matches)
-    print(s2)
+def load_dataset(f_series: list, f_params: str = None, *, limit: int = None):
+    """_summary_
 
+    Args:
+        f_series (list): _description_
+        f_params (str, optional): _description_. Defaults to None.
+        limit (int, optional): _description_. Defaults to None.
 
-def parse_line(line: str):
-    values = [eval(v) for v in line.split(" ")]
-    assert " ".join([str(v) for v in values]) == line, "File not read right"
-    return values
-
-
-def loadfile(path: str):
-    file = []
-    
-    with open(path, "r") as f:
-        while f.readable():
-            values = parse_line(f.readline().strip())
-            file.append(values)
-    
-    return file
-
-
-def load_dataset(f_params: str, f_series: list, limit: int = None):
-    print("Reading parameters from", f_params)
-    params = np.loadtxt(f_params)
+    Returns:
+        _type_: _description_
+    """
     
     print(f"Reading {len(f_series)} series from\n\t", ", \n\t".join(f_series))
-    series = [np.loadtxt(f) for f in f_series]
+    try:
+        # Normally read series; all lines of same length
+        series = [np.loadtxt(f) for f in f_series]
 
-    # Since series can be different length, we slice them to the same length
-    series = loosestack(series)
+        # Since series can be different length, we slice them to the same length
+        series = loosestack(series)
 
-    # Put in to the right shape
-    series = np.swapaxes(series, 0, 1)
-
-    # Apply limits
-    if limit:
-        params = params[:limit]
-        series = series[:limit]
-
-    print("Parameters of Shape", params.shape)
-    print("Series of Shape", series.shape)
+        # Put in to the right shape
+        series = np.swapaxes(series, 0, 1)
+    except ValueError:
+        # Variable length data
+        series = []
+        for f in f_series:
+            file = loadfile(f)
+            series.append(file)
+        
+        assert len(set([ (nsamples := len(s)) for s in series ])) == 1, \
+            "Number of samples in each series should be equal"
+        
+        nseries = len(series)
+        varseries = []
+        for i in range(nsamples):
+            sample = []
+            for n in range(nseries):
+                sample.append(np.array(series[n][i]))
+            # Reimplementation of loosestack
+            LIMIT = min([ len(s) for s in sample ])
+            sample = np.array([ s[:LIMIT] for s in sample ])
+            
+            # Put in to the right shape
+            sample = np.swapaxes(sample, 0, 1)
+            varseries.append(sample)
+        
+        PADTO = max([ s.shape[0] for s in varseries ])
+        for si, sample in enumerate(varseries):
+            padded = []
+            for j in range(sample.shape[1]):
+                padded.append(np.pad(sample[:, j], (0, PADTO - len(sample)), "edge"))
+            varseries[si] = np.array(padded)
+        
+        series = np.array(varseries)
     
-    return params, series
+    # Apply limits
+    series = series[:limit]
 
+    if f_params:
+        print("Reading parameters from", f_params)
+        params = np.loadtxt(f_params)
+        params = params[:limit]
+    else:
+        params = None
+    
+    return series, params
 
 
 class LineReader:

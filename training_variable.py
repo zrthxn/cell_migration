@@ -18,7 +18,7 @@ if not os.path.exists(args.save_to):
     os.makedirs(args.save_to)
 
 series, params = load_dataset(args.series, args.parameters, limit=args.limit)
-print("Series of Shape", series.shape)
+print("Variable length series")
 print("Parameters of Shape", params.shape)
 
 _, num_params = params.shape

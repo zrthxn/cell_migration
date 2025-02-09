@@ -10,3 +10,32 @@ def loosestack(arrays: List[np.ndarray]):
     stack = np.array(stack)
     
     return stack
+
+
+def lc_substring(s1: str, s2: str):
+    print(s1 == s2)
+    print(s1)
+    matches = ""
+    for a, b in zip(s1, s2):
+        matches += "*" if a == b else " "
+    print(matches)
+    print(s2)
+
+
+def parse_line(line: str):
+    values = [eval(v) for v in line.split(" ")]
+    assert " ".join([str(v) for v in values]) == line, "File not read right"
+    return values
+
+
+def loadfile(path: str):
+    file = []
+    
+    with open(path, "r") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            values = np.array(line.strip().split(" "), dtype=float)
+            file.append(values)
+    
+    return file
