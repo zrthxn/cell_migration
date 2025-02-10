@@ -6,7 +6,7 @@ from random import randint, shuffle
 from .arrays import loosestack, loadfile
 
 
-def load_dataset(f_series: list, f_params: str = None, *, limit: int = None):
+def load_dataset(f_series: list, f_params: str = None, *, limit: int = None, method = "shortest"):
     """_summary_
 
     Args:
@@ -52,12 +52,18 @@ def load_dataset(f_series: list, f_params: str = None, *, limit: int = None):
             sample = np.swapaxes(sample, 0, 1)
             varseries.append(sample)
         
-        PADTO = max([ s.shape[0] for s in varseries ])
-        for si, sample in enumerate(varseries):
-            padded = []
-            for j in range(sample.shape[1]):
-                padded.append(np.pad(sample[:, j], (0, PADTO - len(sample)), "edge"))
-            varseries[si] = np.array(padded)
+        assert method in [ "pad", "shortest", "slice" ], f"Unknown method {method}"
+        
+        if method == "pad":
+            PADTO = max([ s.shape[0] for s in varseries ])
+            for si, sample in enumerate(varseries):
+                padded = []
+                for j in range(sample.shape[1]):
+                    padded.append(np.pad(sample[:, j], (0, PADTO - len(sample)), "edge"))
+                varseries[si] = np.array(padded)
+        elif method == "shortest":
+            MINLEN = min([ s.shape[0] for s in varseries ])
+            varseries = [s for s in varseries if s.shape[0] == MINLEN]
         
         series = np.array(varseries)
     
