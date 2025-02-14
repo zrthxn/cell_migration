@@ -17,7 +17,12 @@ def load_dataset(f_series: list, f_params: str = None, *, limit: int = None, met
     Returns:
         _type_: _description_
     """
-    
+    if f_params:
+        print("Reading parameters from", f_params)
+        params = np.loadtxt(f_params)
+    else:
+        params = []
+
     print(f"Reading {len(f_series)} series from\n\t", ", \n\t".join(f_series))
     try:
         # Normally read series; all lines of same length
@@ -30,10 +35,7 @@ def load_dataset(f_series: list, f_params: str = None, *, limit: int = None, met
         series = np.swapaxes(series, 0, 1)
     except ValueError:
         # Variable length data
-        series = []
-        for f in f_series:
-            file = loadfile(f)
-            series.append(file)
+        series = [loadfile(f) for f in f_series]
         
         assert len(set([ (nsamples := len(s)) for s in series ])) == 1, \
             "Number of samples in each series should be equal"
@@ -61,22 +63,19 @@ def load_dataset(f_series: list, f_params: str = None, *, limit: int = None, met
                 for j in range(sample.shape[1]):
                     padded.append(np.pad(sample[:, j], (0, PADTO - len(sample)), "edge"))
                 varseries[si] = np.array(padded)
+            series = varseries
         elif method == "shortest":
             MINLEN = min([ s.shape[0] for s in varseries ])
-            varseries = [s for s in varseries if s.shape[0] == MINLEN]
+            series = [s for s in varseries if s.shape[0] == MINLEN]
+            params = [p for s, p in zip(params, varseries) if s.shape[0] == MINLEN]
         
-        series = np.array(varseries)
+        series = np.array(series)
+        params = np.array(params)
     
     # Apply limits
     series = series[:limit]
-
-    if f_params:
-        print("Reading parameters from", f_params)
-        params = np.loadtxt(f_params)
-        params = params[:limit]
-    else:
-        params = None
-    
+    params = params[:limit]
+        
     return series, params
 
 
