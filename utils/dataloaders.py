@@ -67,7 +67,7 @@ def load_dataset(f_series: list, f_params: str = None, *, limit: int = None, met
         elif method == "shortest":
             MINLEN = min([ s.shape[0] for s in varseries ])
             series = [s for s in varseries if s.shape[0] == MINLEN]
-            params = [p for s, p in zip(params, varseries) if s.shape[0] == MINLEN]
+            params = [p for p, s in zip(params, varseries) if s.shape[0] == MINLEN]
         
         series = np.array(series)
         params = np.array(params)
