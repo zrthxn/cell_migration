@@ -50,8 +50,8 @@ else:
 trainer = Trainer(amortizer, configurator=amortizer.configurator, memory=True, checkpoint_path=args.save_to)
 history = trainer.train_offline(training_data, 
     epochs=args.epochs, 
-    batch_size=64, 
-    early_stopping=True, 
+    batch_size=args.batch_size, 
+    early_stopping=args.early_stopping, 
     validation_sims=validation_data, 
     save_checkpoint=True)
 
