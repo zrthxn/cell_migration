@@ -7,7 +7,7 @@ from bayesflow.diagnostics import plot_sbc_ecdf, plot_sbc_histograms
 
 from models import SequenceNetworkAmortizer, TimeseriesTransformerAmortizer
 from arguments import TrainArguments
-from utils.dataloaders import load_dataset
+from dataloaders import load_dataset
 
 
 args, _ = TrainArguments().parse_known_args(sys.argv[1:])
@@ -17,7 +17,7 @@ if not os.path.exists(args.plot_dir):
 if not os.path.exists(args.save_to):
     os.makedirs(args.save_to)
 
-series, params = load_dataset(args.series, args.parameters, limit=args.limit)
+series, params = load_dataset(args.series, args.parameters, limit=args.limit, method="slice")
 print("Series of Shape", series.shape)
 print("Parameters of Shape", params.shape)
 

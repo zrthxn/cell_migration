@@ -4,7 +4,7 @@ import numpy as np
 from bayesflow.trainers import Trainer
 
 from arguments import ValidationArguments
-from utils.dataloaders import load_dataset
+from dataloaders import load_dataset
 from models import SequenceNetworkAmortizer, TimeseriesTransformerAmortizer
 from plotting import plot_recovery
 

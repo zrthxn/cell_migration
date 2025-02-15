@@ -3,7 +3,7 @@ from typing import List
 from pathlib import Path
 from random import randint, shuffle
 
-from .arrays import loosestack, loadfile
+from utils import loosestack, loadfile
 
 
 def load_dataset(f_series: list, f_params: str = None, *, limit: int = None, method = "shortest"):
@@ -68,6 +68,9 @@ def load_dataset(f_series: list, f_params: str = None, *, limit: int = None, met
             MINLEN = min([ s.shape[0] for s in varseries ])
             series = [s for s in varseries if s.shape[0] == MINLEN]
             params = [p for p, s in zip(params, varseries) if s.shape[0] == MINLEN]
+        elif method == "slice":
+            MINLEN = min([ s.shape[0] for s in varseries ])
+            series = [s[:MINLEN] for s in varseries]
         
         series = np.array(series)
         params = np.array(params)
