@@ -3,7 +3,7 @@ from typing import List
 from pathlib import Path
 from random import randint, shuffle
 
-from utils import loosestack, loadfile
+from common import loosestack, loadfile
 
 
 def load_dataset(f_series: list, f_params: str = None, *, limit: int = None, method = "shortest"):

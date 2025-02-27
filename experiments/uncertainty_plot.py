@@ -7,13 +7,15 @@ from matplotlib import pyplot as plt
 import matplotlib.colors as mcolors
 
 from models import SequenceNetworkAmortizer, TimeseriesTransformerAmortizer
-from utils.arrays import loosestack
+from dataloaders import load_dataset
 
 #%%
 class args:
     network = "tstransformer"
-    checkpoint = f".checkpoints/tstransformer-maxi"
+    checkpoint = f".checkpoints/tstransformer-maxivar-short"
+    
     parameters = "/Users/alisamar/Datasets/cell_migration/maxi/parameters.txt"
+    limit = 400_000
     
     # Experimental dataset
     series = [
@@ -25,10 +27,8 @@ class args:
     gdata = "/Users/alisamar/Datasets/cell_migration/experimental/gdata.json"
 
 #%%
-params = np.loadtxt(args.parameters)[:400_000]
-
-series = loosestack([np.loadtxt(f) for f in args.series])
-series = np.swapaxes(series, 0, 1)
+series, params = load_dataset(args.series, args.parameters, limit=args.limit, method="shortest")
+series = np.swapaxes(series, 1, 2)
 
 _, num_params = params.shape
 num_samples, _, timesteps = series.shape
